@@ -145,5 +145,51 @@ public class JDBCExample {
         return null;
     }
 
+    public static String getNameFromBankerId(String bankerId){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = String.format("SELECT bankername FROM Bankers WHERE bankerid = %s ",bankerId);
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                String name = rs.getString("bankername");
+                return name;
+            }
+
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
 
 }
