@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Timestamp;
+import java.time.Month;
+import java.util.HashMap;
 
 
 public class CustomerAppUI {
@@ -13,7 +16,7 @@ public class CustomerAppUI {
     private static JFrame frame;
 
     public CustomerAppUI(String pin) {
-        panel.setSize(300, 300);
+        panel.setSize(400, 500);
 
         String name = JDBCExample.getNameFromPin(pin);
         welcome.setText("Welcome " + name + " !");
@@ -21,22 +24,23 @@ public class CustomerAppUI {
         //pull up dialog if more then one account
         //numOfAccounts(name,pin);  Implement this function to find out how many and which accounts are avaiable to pick
         //For now we assume only one
-        String account;
-        int numAccounts = 2;
-        if (numAccounts > 1) {
-            String[] options = {
-                    "Checkings",
-                    "Savings"
-            };
-
-            account = (String) JOptionPane.showInputDialog(null, "Chose which account you want to access",
-                    "Choose Account", JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-
-            System.out.println(account);
-
-        } else {
-            account = "Checking";
+        String id = JDBCExample.getIdFromPin(pin);
+        HashMap<String, String> example = JDBCExample.getAvailableAccounts(id);
+        int length = example.size();
+        String[] options = new String[length];
+        int counter = 0;
+        for (String s : example.keySet()) {
+            options[counter] = s;
+            counter++;
         }
+        String account;
+
+        account = (String) JOptionPane.showInputDialog(null, "Chose which account you want to access",
+                "Choose Account", JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+
+        String accountId = example.get(account);
+        System.out.println(account + " " + accountId);
+
 
         String[] transactions = {
                 "Deposit",
@@ -54,6 +58,7 @@ public class CustomerAppUI {
         for (String s : transactions) {
             transactionType.addItem(s);
         }
+
         //Depending on transaction selected call function that will populate necessary fields for the user to enter their info
         transactionType.addActionListener(new ActionListener() {
             @Override
@@ -61,7 +66,7 @@ public class CustomerAppUI {
 
                 if (transactionType.getSelectedItem().equals("Deposit")) {
                     System.out.println(transactionType.getSelectedItem());
-                    //Deposit(pin);
+                    Deposit(account, id, accountId);
                 } else if (transactionType.getSelectedItem().equals("Top-Up")) {
                     System.out.println(transactionType.getSelectedItem());
                     //TopUp(pin);
@@ -91,8 +96,28 @@ public class CustomerAppUI {
 
         });
 
+
         //Deposit, Top-Up, Withdrawl, Purchase, Transfer, collect, Wire , Pay-friend,quick-cash
         //
+    }
+
+    public void Deposit(String account, String customerId, String accountId) {
+        //Function:Add money to the checking or savings account balance
+        //open up a dialog like the checking and balance one
+
+        String value = (String) JOptionPane.showInputDialog("Enter an amount");
+        //get current timestamp
+        Double amount;
+        try {
+            amount = Double.parseDouble(value);
+            System.out.println(amount);
+            JDBCExample.CustomerDepositTransaction(accountId, customerId,
+                    amount, "Deposit");
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     public static void main(String[] args) {
@@ -101,6 +126,7 @@ public class CustomerAppUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+
 
     }
 

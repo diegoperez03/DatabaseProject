@@ -46,7 +46,7 @@ public class BankerAppUI {
 
                 if (transcType.getSelectedItem().equals("Enter Check Transaction")) {
                     System.out.println(transcType.getSelectedItem());
-                    //Deposit(pin);
+                   // Deposit(pin);
                 } else if (transcType.getSelectedItem().equals("Generate Monthly Statement")) {
                     System.out.println(transcType.getSelectedItem());
                     //TopUp(pin);
@@ -80,6 +80,8 @@ public class BankerAppUI {
         });
 
     }
+
+
 
 
     public static void main(String[] args) {
