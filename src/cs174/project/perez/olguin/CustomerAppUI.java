@@ -53,7 +53,9 @@ public class CustomerAppUI {
                 "Collect",
                 "Wire",
                 "Pay-friend",
-                "Quick-cash"
+                "Quick-cash",
+                "Write-Check",
+                "Accrue-Interest"
         };
 
 
@@ -94,7 +96,7 @@ public class CustomerAppUI {
                     else {
                         JLabel warning = new JLabel("You only have one account.");
                         JOptionPane.showMessageDialog(warning, "You only have one account.");
-                        //Wire(pin);
+                        Wire(accountType, id, accountId, example);
                     }
                 } else if (transactionType.getSelectedItem().equals("Pay-friend")) {
                     System.out.println(transactionType.getSelectedItem());
@@ -119,7 +121,6 @@ public class CustomerAppUI {
 
                 } else if (transactionType.getSelectedItem().equals("Purchase")) {
                     System.out.println(transactionType.getSelectedItem());
-                    System.out.println(transactionType.getSelectedItem());
                     ArrayList<String> pocketAccountId = new ArrayList<>();
                     pocketAccountId.addAll(JDBCExample.getPocketAccountIds(id));
                     if (pocketAccountId.size() == 0) {
@@ -131,7 +132,24 @@ public class CustomerAppUI {
 
                 } else if (transactionType.getSelectedItem().equals("Collect")) {
                     System.out.println(transactionType.getSelectedItem());
-                    //Collect(pin);
+                    ArrayList<String> pocketAccountId = new ArrayList<>();
+                    pocketAccountId.addAll(JDBCExample.getPocketAccountIds(id));
+                    if (pocketAccountId.size() == 0) {
+                        JLabel warning = new JLabel("You don't have a pocket account.");
+                        JOptionPane.showMessageDialog(warning, "You don't have a pocket account.");
+                    } else {
+                        Collect(id, accountId, pocketAccountId);
+                    }
+                } else if (transactionType.getSelectedItem().equals("Write-Check")) {
+                    if (accountType.equals("Checking")) {
+                        WriteCheck(id, accountId);
+                    } else {
+                        JLabel warning = new JLabel("You did not select your checking account.");
+                        JOptionPane.showMessageDialog(warning, "You did not select your checking account.");
+                    }
+
+                } else if (transactionType.getSelectedItem().equals("Accrue-Interest")) {
+
                 }
             }
 
@@ -258,6 +276,30 @@ public class CustomerAppUI {
     public void Purchase(String taxid, ArrayList<String> pocketAccountIds) {
 
         JTextField value = new JTextField();
+        JComboBox accountsField = new JComboBox();
+
+        accountsField.addItem(" ");
+        for (Object account : pocketAccountIds) {
+            accountsField.addItem(account.toString());
+        }
+        Double amount;
+        Object[] message = {
+                "Enter an amount:", value,
+                "Select a Pocket Account to Withdraw From:", accountsField
+        };
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            amount = Double.parseDouble(value.getText());
+            String pocketId = accountsField.getSelectedItem().toString();
+            JDBCExample.CustomerPurchaseTransaction(taxid, pocketId, amount);
+        }
+
+    }
+
+    public void Collect(String taxid, String accountid, ArrayList<String> pocketAccountIds) {
+
+        JTextField value = new JTextField();
         JComboBox accounts = new JComboBox();
 
         accounts.addItem(" ");
@@ -267,15 +309,25 @@ public class CustomerAppUI {
         Double amount;
         Object[] message = {
                 "Enter an amount:", value,
-                "Select a Pocket Account to Withdraw From:", accounts
+                "Select a Pocket Account to Collect From:", accounts
         };
 
         int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
             amount = Double.parseDouble(value.getText());
             String pocketId = accounts.getSelectedItem().toString();
-            JDBCExample.CustomerPurchaseTransaction(taxid, pocketId, amount);
+            JDBCExample.CustomerCollectTransaction(taxid, pocketId, accountid, amount);
         }
+
+    }
+
+    public void WriteCheck(String taxid, String accountid) {
+
+        String value = (String) JOptionPane.showInputDialog("Enter an amount");
+        Double amount = Double.parseDouble(value);
+        String checkNumber = JDBCExample.CustomerWriteCheckTransaction(taxid, accountid, amount);
+        JOptionPane.showMessageDialog(null, checkNumber + " is your Check Number !");
+
 
     }
 
