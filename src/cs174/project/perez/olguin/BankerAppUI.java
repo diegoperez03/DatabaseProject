@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 
 public class BankerAppUI {
     private JPanel panel;
@@ -16,6 +17,9 @@ public class BankerAppUI {
 
         String name = JDBCExample.getNameFromBankerId(bankerId);
         WelcomeBanker.setText("Welcome Banker from " + name + " !");
+
+//        String id = JDBCExample.getIdFromPin(customerPin);
+//        HashMap<String, String> example = JDBCExample.getAvailableAccounts(id);
         //pull name from database with pin  and set welcome message on top
         //pull up dialog if more then one account
         //numOfAccounts(name,pin);  Implement this function to find out how many and which accounts are avaiable to pick
@@ -23,10 +27,11 @@ public class BankerAppUI {
 
 
         String[] transactions = {
+                " ",
                 "Enter Check Transaction",
                 "Generate Monthly Statement",
                 "List Closed Accounts",
-                "Generate Goverment Drug and Tax Evasion Report(DTER)",
+                "Generate Government Drug and Tax Evasion Report(DTER)",
                 "Transfer",
                 "Customer Report",
                 "Add Interest",
@@ -46,7 +51,7 @@ public class BankerAppUI {
 
                 if (transcType.getSelectedItem().equals("Enter Check Transaction")) {
                     System.out.println(transcType.getSelectedItem());
-                   // Deposit(pin);
+                    EnterCheckTransaction();
                 } else if (transcType.getSelectedItem().equals("Generate Monthly Statement")) {
                     System.out.println(transcType.getSelectedItem());
                     //TopUp(pin);
@@ -81,7 +86,28 @@ public class BankerAppUI {
 
     }
 
+    public void EnterCheckTransaction() {
+        JTextField value = new JTextField();
+        JTextField value2 = new JTextField();
+        JTextField value3 = new JTextField();
+        String cid;
+        String tid;
+        Double amount;
+        Object message[] = {
+                "Enter Customer's Account ID", value,
+                "Enter Customer's Tax ID", value2,
+                "Enter an Amount", value3
+        };
+        int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            cid = value.getText();
+            tid = value2.getText();
+            amount = Double.parseDouble(value3.getText());
+            JDBCExample.BankerEnterCheckTransaction(cid, tid, amount, "EnterCheck");
+        } else {
 
+        }
+    }
 
 
     public static void main(String[] args) {
@@ -128,4 +154,5 @@ public class BankerAppUI {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
+
 }

@@ -2,6 +2,7 @@ package cs174.project.perez.olguin;
 
 import oracle.sql.TIMESTAMP;
 
+import java.awt.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -267,6 +268,7 @@ public class JDBCExample {
             ResultSet rs = stmt.executeQuery(sql);
             while(rs.next()){
                 String id = rs.getString("taxid");
+                System.out.println(id);
                 return id;
             }
 
@@ -319,7 +321,8 @@ public class JDBCExample {
                 String s = rs.getString("accounttype");
                 String x = rs.getString("accountid");
                 list.put(s,x);
-
+                System.out.println(s);
+                System.out.println(x);
             }
             return list;
 
@@ -503,6 +506,57 @@ public class JDBCExample {
         System.out.println("Goodbye!");
         return null;
     }
+
+    public static String BankerEnterCheckTransaction(String accountId, String taxId, Double amount, String TransactionType) {
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String transactionId = getUniqueTransactionId();
+            String sql = String.format("INSERT INTO CustomerTransaction " +
+                    "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",accountId, taxId, amount, "Wire", transactionId);
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+            Double total = getBalance(accountId) + amount;
+
+            String sql2 = String.format("UPDATE Account "+
+                    "SET balance = %f WHERE accountid = %s",total,accountId);
+            System.out.println(sql2);
+            stmt.executeUpdate(sql2);
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+
+    return null;
+    }
+
 
     public static Double getBalance(String accountId){
         Connection conn = null;
