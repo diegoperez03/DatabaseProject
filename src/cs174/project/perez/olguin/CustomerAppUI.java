@@ -1,5 +1,7 @@
 package cs174.project.perez.olguin;
 
+import jdk.nashorn.internal.scripts.JO;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -43,6 +45,7 @@ public class CustomerAppUI {
 
 
         String[] transactions = {
+                " ",
                 "Deposit",
                 "Top-Up",
                 "Withdrawal",
@@ -72,13 +75,21 @@ public class CustomerAppUI {
                     //TopUp(pin);
                 } else if (transactionType.getSelectedItem().equals("Withdrawal")) {
                     System.out.println(transactionType.getSelectedItem());
-                    //Withdrawal(pin);
+                    Withdrawal(account, id, accountId);
                 } else if (transactionType.getSelectedItem().equals("Transfer")) {
                     System.out.println(transactionType.getSelectedItem());
                     //Transfer(pin);
                 } else if (transactionType.getSelectedItem().equals("Wire")) {
                     System.out.println(transactionType.getSelectedItem());
-                    //Wire(pin);
+                    if (example.size() >= 2) {
+                        Wire(account, id, accountId, example);
+                    }
+                    //MESSAGE THAT YOU DON'T HAVE ENOUGH ACCOUNTS TO TRANSFER TO
+                    else {
+                        JLabel warning = new JLabel("You only have one account.");
+                        JOptionPane.showMessageDialog(warning, "You only have one account.");
+                        //Wire(pin);
+                    }
                 } else if (transactionType.getSelectedItem().equals("Pay-friend")) {
                     System.out.println(transactionType.getSelectedItem());
                     //PayFriend(pin);
@@ -117,6 +128,52 @@ public class CustomerAppUI {
             e.printStackTrace();
         }
 
+
+    }
+
+    public void Withdrawal(String account, String customerId, String accountId) {
+        //Function:Add money to the checking or savings account balance
+        //open up a dialog like the checking and balance one
+
+        String value = (String) JOptionPane.showInputDialog("Enter an amount");
+        //get current timestamp
+        Double amount;
+        try {
+            amount = Double.parseDouble(value);
+            System.out.println(amount);
+            JDBCExample.CustomerWithdrawalTransaction(accountId, customerId,
+                    amount, "Withdrawal");
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    public void Wire(String selectedAccount, String customerId, String accountId, HashMap otherAccounts) {
+        //Function: Subtract money from one savings or checking account balance & add to another
+
+        JTextField value = new JTextField();
+        JComboBox accounts = new JComboBox();
+        for (Object account : otherAccounts.keySet()) {
+            if (!selectedAccount.equals(account)) {
+                accounts.addItem(account.toString());
+            }
+        }
+        Double amount;
+        Object[] message = {
+                "Enter an amount:", value,
+                "Select an account:", accounts
+        };
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            amount = Double.parseDouble(value.getText());
+            String selection = accounts.getSelectedItem().toString();
+            JDBCExample.CustomerWireTransaction(accountId, customerId, amount, otherAccounts.get(selection).toString(), "Wire");
+        } else {
+
+        }
 
     }
 
@@ -167,4 +224,5 @@ public class CustomerAppUI {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
+
 }
