@@ -466,7 +466,7 @@ public class JDBCExample {
                     "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",FromAccountId, taxId, Amount, "Wire", transactionId);
             System.out.println(sql);
             stmt.executeUpdate(sql);
-            Double total = getBalance(FromAccountId) - Amount;
+            Double total = getBalance(FromAccountId) - (Amount * 1.02);
 
             String sql2 = String.format("UPDATE Account "+
                     "SET balance = %f WHERE accountid = %s",total,FromAccountId);
