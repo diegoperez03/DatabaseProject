@@ -2,7 +2,6 @@ package cs174.project.perez.olguin;
 
 import oracle.sql.TIMESTAMP;
 
-import java.awt.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -268,7 +267,6 @@ public class JDBCExample {
             ResultSet rs = stmt.executeQuery(sql);
             while(rs.next()){
                 String id = rs.getString("taxid");
-                System.out.println(id);
                 return id;
             }
 
@@ -297,7 +295,7 @@ public class JDBCExample {
         return null;
     }
 
-    public static HashMap<String,String> getAvailableAccounts(String id){
+    public static HashMap<String,String> getCheckingSavingAccounts(String id){
         Connection conn = null;
         Statement stmt = null;
         try{
@@ -312,7 +310,8 @@ public class JDBCExample {
             //Insert into database
 
             System.out.println(id);
-            String sql = String.format("SELECT accounttype,accountid FROM Account WHERE taxid = %s",id);
+            String sql = String.format("SELECT accounttype,accountid FROM Account WHERE taxid = %s AND " +
+                    "accounttype != 'Pocket'",id);
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
 
@@ -321,8 +320,7 @@ public class JDBCExample {
                 String s = rs.getString("accounttype");
                 String x = rs.getString("accountid");
                 list.put(s,x);
-                System.out.println(s);
-                System.out.println(x);
+
             }
             return list;
 
@@ -450,8 +448,7 @@ public class JDBCExample {
         return null;
     }
 
-    public static String CustomerWireTransaction(String FromAccountId, String taxId, Double Amount, String ToAccountID,
-                                                       String TransactionType){
+    public static String CustomerWireTransaction(String FromAccountId, String taxId, Double Amount, String ToAccountID){
         Connection conn = null;
         Statement stmt = null;
         try{
@@ -507,7 +504,7 @@ public class JDBCExample {
         return null;
     }
 
-    public static String BankerEnterCheckTransaction(String accountId, String taxId, Double amount, String TransactionType) {
+    public static Double getBalance(String accountId){
         Connection conn = null;
         Statement stmt = null;
         try{
@@ -520,17 +517,14 @@ public class JDBCExample {
             System.out.println("Creating statement...");
             stmt = conn.createStatement();
             //Insert into database
-            String transactionId = getUniqueTransactionId();
-            String sql = String.format("INSERT INTO CustomerTransaction " +
-                    "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",accountId, taxId, amount, "Wire", transactionId);
+            String sql = String.format("SELECT balance FROM Account WHERE accountid = %s ",accountId);
             System.out.println(sql);
-            stmt.executeUpdate(sql);
-            Double total = getBalance(accountId) + amount;
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                Double amount = rs.getDouble("balance");
+                return amount;
+            }
 
-            String sql2 = String.format("UPDATE Account "+
-                    "SET balance = %f WHERE accountid = %s",total,accountId);
-            System.out.println(sql2);
-            stmt.executeUpdate(sql2);
 
         }catch(SQLException se){
             //Handle errors for JDBC
@@ -553,12 +547,10 @@ public class JDBCExample {
             }//end finally try
         }//end try
         System.out.println("Goodbye!");
-
-    return null;
+        return null;
     }
 
-
-    public static Double getBalance(String accountId){
+    public static ArrayList<String> getPocketAccountIds(String taxid){
         Connection conn = null;
         Statement stmt = null;
         try{
@@ -571,13 +563,191 @@ public class JDBCExample {
             System.out.println("Creating statement...");
             stmt = conn.createStatement();
             //Insert into database
-            String sql = String.format("SELECT balance FROM Account WHERE accountid = %s ",accountId);
+            String sql = String.format("SELECT accountid FROM Account WHERE accounttype Like 'Pocket' AND taxid = %s ",taxid);
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
+            ArrayList<String> accountids = new ArrayList<>();
             while(rs.next()){
-                Double amount = rs.getDouble("balance");
-                return amount;
+                String id = rs.getString("accountid");
+                accountids.add(id);
             }
+            System.out.println(accountids.size());
+            return accountids;
+
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
+    public static String CustomerTopUpTransaction(String FromAccountId, String taxId,String pocketId, Double Amount){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String transactionId = getUniqueTransactionId();
+            String sql = String.format("INSERT INTO CustomerTransaction " +
+                    "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",FromAccountId, taxId, Amount, "Top Up", transactionId);
+            String sql2 = String.format("INSERT INTO CustomerTransaction " +
+                    "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",pocketId, taxId, Amount, "Top Up", getUniqueTransactionId());
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+            System.out.println(sql2);
+            stmt.executeUpdate(sql2);
+            Double total = getBalance(FromAccountId) - (Amount);
+
+            String sql4 = String.format("UPDATE Account "+
+                    "SET balance = %f WHERE accountid = %s",total,FromAccountId);
+            System.out.println(sql4);
+            stmt.executeUpdate(sql4);
+
+
+            Double total2 = getBalance(pocketId) + Amount;
+            String sql3 = String.format("UPDATE Account "+
+                    "SET balance = %f WHERE accountid = %s", total2, pocketId);
+            System.out.println(sql3);
+            stmt.executeUpdate(sql3);
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
+    public static String CustomerPayFriendTransaction(String taxid, String friendId,String pocketId, Double Amount){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String transactionId = getUniqueTransactionId();
+            String sql = String.format("INSERT INTO CustomerTransaction " +
+                    "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",pocketId, taxid, Amount, "Pay Friend", transactionId);
+
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+
+            String sql2 = String.format("INSERT INTO CustomerTransaction " +
+                    "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",friendId, taxid, Amount, "Pay Friend", getUniqueTransactionId());
+            System.out.println(sql2);
+            stmt.executeUpdate(sql2);
+            Double total = getBalance(pocketId) - (Amount);
+
+            String sql4 = String.format("UPDATE Account "+
+                    "SET balance = %f WHERE accountid = %s",total,pocketId);
+            System.out.println(sql4);
+            stmt.executeUpdate(sql4);
+
+
+            Double total2 = getBalance(friendId) + Amount;
+            String sql3 = String.format("UPDATE Account "+
+                    "SET balance = %f WHERE accountid = %s", total2, friendId);
+            System.out.println(sql3);
+            stmt.executeUpdate(sql3);
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
+    public static String CustomerPurchaseTransaction(String taxid,String pocketId, Double Amount){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String transactionId = getUniqueTransactionId();
+            String sql = String.format("INSERT INTO CustomerTransaction " +
+                    "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",pocketId, taxid, Amount, "Pay Friend", transactionId);
+
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+
+
+            Double total = getBalance(pocketId) - (Amount);
+
+            String sql4 = String.format("UPDATE Account "+
+                    "SET balance = %f WHERE accountid = %s",total,pocketId);
+            System.out.println(sql4);
+            stmt.executeUpdate(sql4);
 
 
         }catch(SQLException se){
