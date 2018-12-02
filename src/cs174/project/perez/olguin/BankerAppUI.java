@@ -23,6 +23,7 @@ public class BankerAppUI {
 
 
         String[] transactions = {
+                " ",
                 "Enter Check Transaction",
                 "Generate Monthly Statement",
                 "List Closed Accounts",
@@ -46,7 +47,7 @@ public class BankerAppUI {
 
                 if (transcType.getSelectedItem().equals("Enter Check Transaction")) {
                     System.out.println(transcType.getSelectedItem());
-                   // Deposit(pin);
+                   EnterCheckTransaction(bankerId);
                 } else if (transcType.getSelectedItem().equals("Generate Monthly Statement")) {
                     System.out.println(transcType.getSelectedItem());
                     //TopUp(pin);
@@ -79,6 +80,28 @@ public class BankerAppUI {
             }
         });
 
+    }
+
+    public void EnterCheckTransaction(String bankerid) {
+        JTextField value = new JTextField();
+        JTextField value2 = new JTextField();
+        JTextField value3 = new JTextField();
+        String cid;
+        String tid;
+        Double amount;
+        Object message[] = {
+                "Enter Customer's Account ID", value,
+                "Enter Customer's Tax ID", value2,
+                "Enter an Amount", value3
+        };
+        int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            cid = value.getText();
+            tid = value2.getText();
+            amount = Double.parseDouble(value3.getText());
+            JDBCExample.BankerEnterCheckTransaction(cid, tid, amount, "EnterCheck", bankerid);
+        } else {
+        }
     }
 
 

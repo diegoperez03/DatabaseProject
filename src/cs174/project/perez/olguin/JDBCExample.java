@@ -209,7 +209,7 @@ public class JDBCExample {
             System.out.println("Creating statement...");
             stmt = conn.createStatement();
             //Insert into database
-            String sql = "SELECT transactionid FROM CustomerTransaction ";
+            String sql = "SELECT transcid FROM CustomerTransaction ";
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
             ArrayList<String> ids = new ArrayList<>();
@@ -891,6 +891,57 @@ public class JDBCExample {
             }//end finally try
         }//end try
         System.out.println("Goodbye!");
+        return null;
+    }
+
+
+    public static String BankerEnterCheckTransaction(String accountId, String taxId, Double amount, String TransactionType, String bankerid) {
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String transactionId = getUniqueTransactionId();
+            String sql = String.format("INSERT INTO BankerTransaction " +
+                    "VALUES ('%s','%s', CURRENT_TIMESTAMP,'%s' ) ", bankerid, "Wire", transactionId);
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+            Double total = getBalance(accountId) + amount;
+
+            String sql2 = String.format("UPDATE Account "+
+                    "SET balance = %f WHERE accountid = %s",total,accountId);
+            System.out.println(sql2);
+            stmt.executeUpdate(sql2);
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+
         return null;
     }
 
