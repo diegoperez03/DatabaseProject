@@ -86,6 +86,14 @@ public class CustomerAppUI {
                     Withdrawal(accountType, id, accountId);
                 } else if (transactionType.getSelectedItem().equals("Transfer")) {
                     System.out.println(transactionType.getSelectedItem());
+                    if (example.size() >= 2) {
+                        Transfer(accountType, id, accountId, example);
+                    }
+                    //MESSAGE THAT YOU DON'T HAVE ENOUGH ACCOUNTS TO TRANSFER TO
+                    else {
+                        JLabel warning = new JLabel("You only have one account.");
+                        JOptionPane.showMessageDialog(warning, "You only have one account.");
+                    }
                     //Transfer(pin);
                 } else if (transactionType.getSelectedItem().equals("Wire")) {
                     System.out.println(transactionType.getSelectedItem());
@@ -96,7 +104,6 @@ public class CustomerAppUI {
                     else {
                         JLabel warning = new JLabel("You only have one account.");
                         JOptionPane.showMessageDialog(warning, "You only have one account.");
-                        Wire(accountType, id, accountId, example);
                     }
                 } else if (transactionType.getSelectedItem().equals("Pay-friend")) {
                     System.out.println(transactionType.getSelectedItem());
@@ -110,14 +117,7 @@ public class CustomerAppUI {
                     }
                 } else if (transactionType.getSelectedItem().equals("Quick-cash")) {
                     System.out.println(transactionType.getSelectedItem());
-                    ArrayList<String> pocketAccountId = new ArrayList<>();
-                    pocketAccountId.addAll(JDBCExample.getPocketAccountIds(id));
-                    if (pocketAccountId.size() == 0) {
-                        JLabel warning = new JLabel("You don't have a pocket account.");
-                        JOptionPane.showMessageDialog(warning, "You don't have a pocket account.");
-                    } else {
-                        //QuickCash(pin);
-                    }
+                    QuickCash(id, accountId);
 
                 } else if (transactionType.getSelectedItem().equals("Purchase")) {
                     System.out.println(transactionType.getSelectedItem());
@@ -149,7 +149,7 @@ public class CustomerAppUI {
                     }
 
                 } else if (transactionType.getSelectedItem().equals("Accrue-Interest")) {
-
+                    AccrueInterest(id, accountId);
                 }
             }
 
@@ -327,8 +327,51 @@ public class CustomerAppUI {
         Double amount = Double.parseDouble(value);
         String checkNumber = JDBCExample.CustomerWriteCheckTransaction(taxid, accountid, amount);
         JOptionPane.showMessageDialog(null, checkNumber + " is your Check Number !");
+    }
 
+    public void QuickCash(String taxid, String accountid) {
 
+        JDBCExample.CustomerQuickCashTransaction(taxid, accountid, 20.0);
+
+    }
+
+    public void Transfer(String selectedAccount, String customerId, String accountId, HashMap otherAccounts) {
+        //Function: Transfer money from one savings or checking account balance & add to another
+        //Something else
+
+        JTextField value = new JTextField();
+        JComboBox accounts = new JComboBox();
+        for (Object account : otherAccounts.keySet()) {
+            if (!selectedAccount.equals(account)) {
+                accounts.addItem(account.toString());
+            }
+        }
+        Double amount;
+        Object[] message = {
+                "Enter an amount to Transfer:", value,
+                "Select an account:", accounts
+        };
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            amount = Double.parseDouble(value.getText());
+            if (amount > 2000.0) {
+                JOptionPane.showMessageDialog(null, "You can not transfer more than 2000 dollars");
+            } else {
+                String selection = accounts.getSelectedItem().toString();
+                String success = JDBCExample.CustomerTransferTransaction(accountId, customerId, amount, otherAccounts.get(selection).toString());
+            }
+
+        }
+
+    }
+
+    public void AccrueInterest(String taxid, String accountid) {
+        Double interest = JDBCExample.getInterest(accountid);
+        System.out.println(interest);
+        Double balance = JDBCExample.AccrueInterest(accountid, taxid);
+        JOptionPane.showMessageDialog(null, "You accrued " + balance + " dollars");
+        JDBCExample.CustomerAccruedInterestTransaction(taxid, accountid, balance);
     }
 
 
