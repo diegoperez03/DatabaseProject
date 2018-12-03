@@ -47,13 +47,13 @@ public class BankerAppUI {
 
                 if (transcType.getSelectedItem().equals("Enter Check Transaction")) {
                     System.out.println(transcType.getSelectedItem());
-                   EnterCheckTransaction(bankerId);
+                    EnterCheckTransaction(bankerId);
                 } else if (transcType.getSelectedItem().equals("Generate Monthly Statement")) {
                     System.out.println(transcType.getSelectedItem());
                     //TopUp(pin);
                 } else if (transcType.getSelectedItem().equals("List Closed Accounts")) {
                     System.out.println(transcType.getSelectedItem());
-                    //Withdrawal(pin);
+                    ListClosedAccounts();
                 } else if (transcType.getSelectedItem().equals("Generate Goverment Drug and Tax Evasion Report(DTER)")) {
                     System.out.println(transcType.getSelectedItem());
                     //Transfer(pin);
@@ -68,7 +68,7 @@ public class BankerAppUI {
                     //QuickCash(pin);
                 } else if (transcType.getSelectedItem().equals("Create Account")) {
                     System.out.println(transcType.getSelectedItem());
-                    //Purchase(pin);
+                    CreateAccount(bankerId);
                 } else if (transcType.getSelectedItem().equals("Delete Closed Accounts and Customers")) {
                     System.out.println(transcType.getSelectedItem());
                     //Collect(pin);
@@ -104,7 +104,69 @@ public class BankerAppUI {
         }
     }
 
+    public void GenerateMonthlyStatement(String bankerid) {
+        JTextField value = new JTextField();
+        String cid;
+        Object message[] = {
+                "Enter Customer's Account ID", value,
+        };
+        int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            cid = value.getText();
+            JDBCExample.BankerGenerateMonthlyStatement(cid, bankerid);
+        } else {
+        }
+    }
 
+    public void ListClosedAccounts() {
+        // create a new frame to stor text field and button
+        JFrame f = new JFrame("label");
+
+        // create a label to display text
+        JLabel l = new JLabel();
+
+        // add text to label
+        l.setText("Listing Closed Accounts");
+
+        // create a panel
+        JPanel p = new JPanel();
+
+        // add label to panel
+        p.add(l);
+
+        // add panel to frame
+        f.add(p);
+
+        // set the size of frame
+        f.setSize(300, 300);
+
+        f.show();
+        JDBCExample.BankerListClosedAccounts();
+    }
+
+    public void GenerateDTER(String bankerid) {
+
+    }
+
+    public void CustomerReport(String bankerid) {
+
+    }
+
+    public void AddInterest(String bankerid) {
+
+    }
+
+    public void CreateAccount(String bankerid) {
+        NewCustomer.main();
+    }
+
+    public void DeleteClosedAccounts(String bankerid) {
+
+    }
+
+    public void DeleteTransactions(String bankerid) {
+
+    }
 
 
     public static void main(String[] args) {
@@ -151,4 +213,5 @@ public class BankerAppUI {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
+
 }
