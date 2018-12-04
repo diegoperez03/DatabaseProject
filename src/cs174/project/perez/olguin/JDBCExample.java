@@ -1842,9 +1842,7 @@ public class JDBCExample {
 
     }
 
-    public static String BankerGenerateMonthlyStatement(String taxId, String bankerid){
-        return null;
-    }
+
 
     public static HashMap<String, String> BankerListClosedAccounts(String bankerid) {
         Connection conn = null;
@@ -2048,4 +2046,6 @@ public class JDBCExample {
         System.out.println("Goodbye!");
         return null;
     }
+
+
 }

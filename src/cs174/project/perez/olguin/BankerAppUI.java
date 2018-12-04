@@ -1,9 +1,6 @@
 package cs174.project.perez.olguin;
 
-import jdk.nashorn.internal.scripts.JO;
-
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -243,10 +240,16 @@ public class BankerAppUI {
 
     public void DeleteTransactions(String bankerid) {
         JFrame f = new JFrame("label");
+
+        // create a label to display text
         JLabel l = new JLabel();
         l.setText("Deleting all transactions... Creating a fresh table for the new month");
         JPanel p = new JPanel();
+
+        // add label to panel
         p.add(l);
+
+        // add panel to frame
         f.add(p);
         f.setSize(100, 100);
         f.show();
@@ -298,4 +301,5 @@ public class BankerAppUI {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
+
 }
