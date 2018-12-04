@@ -152,6 +152,98 @@ public class JDBCExample {
         return null;
     }
 
+    public static String getNameFromId(String taxId){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = String.format("SELECT name FROM Customers WHERE taxid = %s ",taxId);
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                String name = rs.getString("name");
+                return name;
+            }
+
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
+    public static String getAddressFromId(String taxId){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = String.format("SELECT address FROM Customers WHERE taxid = %s ",taxId);
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                String name = rs.getString("address");
+                return name;
+            }
+
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
     public static String getNameFromBankerId(String bankerId){
         Connection conn = null;
         Statement stmt = null;
@@ -367,6 +459,58 @@ public class JDBCExample {
             System.out.println(id);
             String sql = String.format("SELECT accounttype,accountid FROM Account WHERE taxid = %s AND " +
                     "accounttype != 'Pocket'",id);
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+
+            HashMap<String,String> list = new HashMap<>();
+            while(rs.next()) {
+                String s = rs.getString("accounttype");
+                String x = rs.getString("accountid");
+                list.put(s,x);
+
+            }
+            return list;
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
+    public static HashMap<String,String> getAllAccounts(String id){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+
+            System.out.println(id);
+            String sql = String.format("SELECT accounttype,accountid FROM Account WHERE taxid = %s",id);
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
 
@@ -1358,11 +1502,194 @@ public class JDBCExample {
         return null;
     }
 
-    public static String BankerGenerateMonthlyStatement(String accountId, String bankerid){
+    public static HashMap<Timestamp, String> getTransactionsFromAccount(String accountId){
+        Connection conn = null;
+        Statement stmt = null;
+        HashMap<Timestamp, String> hashMap = new HashMap<>();
+        try {
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = String.format("SELECT transactiontype, time FROM CustomerTransaction WHERE accountid = %s and time > sysdate-30 ",accountId);
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                String ttype = rs.getString("transactiontype");
+                Timestamp timestamp = rs.getTimestamp("time");
+                hashMap.put(timestamp, ttype);
+            }
+            System.out.println(hashMap.size());
+            return hashMap;
+
+        }
+        catch (SQLException se) {
+        //Handle errors for JDBC
+        se.printStackTrace();
+        } catch (Exception e) {
+        //Handle errors for Class.forName
+        e.printStackTrace();
+        } finally {
+        //finally block used to close resources
+            try {
+                if (stmt != null)
+                conn.close();
+         } catch (SQLException se) {
+            }// do nothing
+        try {
+            if (conn != null)
+                conn.close();
+            }
+        catch (SQLException se) {
+            se.printStackTrace();
+         }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+
+    }
+
+    public static ArrayList<Double> getFinalInitialBalance(String accountId){
+        Connection conn = null;
+        Statement stmt = null;
+        ArrayList<Double> arrayList = new ArrayList<>();
+        try {
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = String.format("SELECT balanceafter FROM CustomerTransaction WHERE accountid = %s and time > sysdate-30 ",accountId);
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            boolean first = true;
+            boolean temp = false;
+            Double initial = 0.0;
+            Double last = 0.0;
+            while(rs.next()){
+                temp = true;
+                //String ttype = rs.getString("transactiontype");
+                if(first){
+                    initial = rs.getDouble("balanceafter");
+                    first = false;
+                }
+                last = rs.getDouble("balanceafter");
+            }
+
+            Double balance = 0.0;
+            if(temp = false){
+                balance = getBalance(accountId);
+                initial = balance;
+                last = balance;
+            }
+
+            arrayList.add(initial);
+            arrayList.add(last);
+
+            return arrayList;
+
+        }
+        catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        } finally {
+            //finally block used to close resources
+            try {
+                if (stmt != null)
+                    conn.close();
+            } catch (SQLException se) {
+            }// do nothing
+            try {
+                if (conn != null)
+                    conn.close();
+            }
+            catch (SQLException se) {
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+
+    }
+
+    public static String BankerGenerateMonthlyStatement(String taxId, String bankerid){
         return null;
     }
 
-    public static String BankerListClosedAccounts() {
+    public static HashMap<String, String> BankerListClosedAccounts(String bankerid) {
+        Connection conn = null;
+        Statement stmt = null;
+        HashMap<String, String> hashMap = new HashMap<>();
+        try {
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String f = "false";
+            String sql = String.format("SELECT accountid, accounttype FROM Account WHERE closed = 't' ");
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                String accountid = rs.getString("accountid");
+                String accounttype = rs.getString("accounttype");
+                hashMap.put(accountid, accounttype);
+            }
+            System.out.println(hashMap.size());
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String transactionId = getUniqueBankerTransactionId();
+            String sql2 = String.format("INSERT INTO BankerTransaction " +
+                    "VALUES ('%s','%s', CURRENT_TIMESTAMP,'%s' ) ", bankerid, "ListClosedAccounts", transactionId);
+            System.out.println(sql);
+            stmt.execute(sql2);
+
+            return hashMap;
+
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        } finally {
+            //finally block used to close resources
+            try {
+                if (stmt != null)
+                    conn.close();
+            } catch (SQLException se) {
+            }// do nothing
+            try {
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
+    public static String BankerAddInterest(String bankerid){
         Connection conn = null;
         Statement stmt = null;
         try {
@@ -1376,8 +1703,8 @@ public class JDBCExample {
             stmt = conn.createStatement();
             //Insert into database
             String transactionId = getUniqueBankerTransactionId();
-            String f = "false";
-            String sql = String.format("SELECT * FROM Account WHERE closed = f ");
+            String sql = String.format("INSERT INTO BankerTransaction " +
+                    "VALUES ('%s','%s', CURRENT_TIMESTAMP,'%s' ) ", bankerid, "AddInterest", transactionId);
             System.out.println(sql);
             stmt.executeUpdate(sql);
         } catch (SQLException se) {
@@ -1404,5 +1731,103 @@ public class JDBCExample {
         return null;
     }
 
+    public static String BankerDeleteTransactions(String bankerid){
+        Connection conn = null;
+        Statement stmt = null;
+        try {
 
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = String.format("DELETE FROM CustomerTransaction");
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String transactionId = getUniqueBankerTransactionId();
+            String sql2 = String.format("INSERT INTO BankerTransaction " +
+                    "VALUES ('%s','%s', CURRENT_TIMESTAMP,'%s' ) ", bankerid, "DeleteTransactions", transactionId);
+            System.out.println(sql);
+            stmt.execute(sql2);
+
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        } finally {
+            //finally block used to close resources
+            try {
+                if (stmt != null)
+                    conn.close();
+            } catch (SQLException se) {
+            }// do nothing
+            try {
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
+    public static String BankerDeleteClosedAccounts(String bankerid){
+        Connection conn = null;
+        Statement stmt = null;
+        try {
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = String.format("DELETE FROM Account WHERE closed = true");
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String transactionId = getUniqueBankerTransactionId();
+            String sql2 = String.format("INSERT INTO BankerTransaction " +
+                    "VALUES ('%s','%s', CURRENT_TIMESTAMP,'%s' ) ", bankerid, "DeleteClosedAccounts", transactionId);
+            System.out.println(sql);
+            stmt.execute(sql2);
+
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        } finally {
+            //finally block used to close resources
+            try {
+                if (stmt != null)
+                    conn.close();
+            } catch (SQLException se) {
+            }// do nothing
+            try {
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
 }

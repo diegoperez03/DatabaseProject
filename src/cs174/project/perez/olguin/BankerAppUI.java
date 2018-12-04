@@ -1,9 +1,15 @@
 package cs174.project.perez.olguin;
 
+import jdk.nashorn.internal.scripts.JO;
+
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class BankerAppUI {
     private JPanel panel;
@@ -50,13 +56,12 @@ public class BankerAppUI {
                     EnterCheckTransaction(bankerId);
                 } else if (transcType.getSelectedItem().equals("Generate Monthly Statement")) {
                     System.out.println(transcType.getSelectedItem());
-                    //TopUp(pin);
+                    GenerateMonthlyStatement(bankerId);
                 } else if (transcType.getSelectedItem().equals("List Closed Accounts")) {
                     System.out.println(transcType.getSelectedItem());
-                    ListClosedAccounts();
+                    ListClosedAccounts(bankerId);
                 } else if (transcType.getSelectedItem().equals("Generate Goverment Drug and Tax Evasion Report(DTER)")) {
                     System.out.println(transcType.getSelectedItem());
-                    //Transfer(pin);
                 } else if (transcType.getSelectedItem().equals("Transfer")) {
                     System.out.println(transcType.getSelectedItem());
                     //Wire(pin);
@@ -65,7 +70,7 @@ public class BankerAppUI {
                     //PayFriend(pin);
                 } else if (transcType.getSelectedItem().equals("Add Interest")) {
                     System.out.println(transcType.getSelectedItem());
-                    //QuickCash(pin);
+                    AddInterest(bankerId);
                 } else if (transcType.getSelectedItem().equals("Create Account")) {
                     System.out.println(transcType.getSelectedItem());
                     CreateAccount(bankerId);
@@ -74,7 +79,7 @@ public class BankerAppUI {
                     //Collect(pin);
                 } else if (transcType.getSelectedItem().equals("Delete Transactions")) {
                     System.out.println(transcType.getSelectedItem());
-                    //Collect(pin);
+                    DeleteTransactions(bankerId);
                 }
 
             }
@@ -105,43 +110,55 @@ public class BankerAppUI {
     }
 
     public void GenerateMonthlyStatement(String bankerid) {
-        JTextField value = new JTextField();
-        String cid;
-        Object message[] = {
-                "Enter Customer's Account ID", value,
-        };
-        int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
-        if (option == JOptionPane.OK_OPTION) {
-            cid = value.getText();
-            JDBCExample.BankerGenerateMonthlyStatement(cid, bankerid);
-        } else {
+        String value = JOptionPane.showInputDialog("Enter Customer's Tax ID");
+        String tid;
+        String statement = "";
+        String name;
+        String address;
+        HashMap<String, String> hashMap = new HashMap<>();
+        HashMap<Timestamp, String> hashMap1 = new HashMap<>();
+        try {
+            tid = value;
+            System.out.println(tid);
+            hashMap = JDBCExample.getAllAccounts(tid);
+            name = JDBCExample.getNameFromId(tid);
+            address = JDBCExample.getAddressFromId(tid);
+            statement += name + " " + address + " " + '\n';
+            for (String key : hashMap.keySet()) {
+                statement += key + '\n';
+                String accountId = hashMap.get(key);
+                hashMap1 = JDBCExample.getTransactionsFromAccount(accountId);
+                ArrayList<Double> finLast = JDBCExample.getFinalInitialBalance(accountId);
+                statement += '\t' + "   " + "Initial Balance: " + finLast.get(0) + '\n';
+                if (hashMap1.size() == 0) {
+                    statement += '\t' + "   " + "No transactions made in last 30 days for this account" + '\n';
+                    statement += '\t' + "   " + "Final Balance: " + finLast.get(1) + '\n';
+                } else {
+                    for (Timestamp key1 : hashMap1.keySet()) {
+                        statement += '\t' + "   " + hashMap1.get(key1) + ": " + key1 + '\n';
+                    }
+                    statement += '\t' + "   " + "Final Balance: " + finLast.get(1) + '\n';
+                }
+                if ((finLast.get(1) - finLast.get(0)) > 100000) {
+                    statement += "Customer has reached the limit of the insurance!";
+                }
+                //JDBCExample.BankerGenerateMonthlyStatement(tid, bankerid);
+            }
+            JOptionPane.showMessageDialog(null, statement);
+
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
+
     }
 
-    public void ListClosedAccounts() {
-        // create a new frame to stor text field and button
-        JFrame f = new JFrame("label");
-
-        // create a label to display text
-        JLabel l = new JLabel();
-
-        // add text to label
-        l.setText("Listing Closed Accounts");
-
-        // create a panel
-        JPanel p = new JPanel();
-
-        // add label to panel
-        p.add(l);
-
-        // add panel to frame
-        f.add(p);
-
-        // set the size of frame
-        f.setSize(300, 300);
-
-        f.show();
-        JDBCExample.BankerListClosedAccounts();
+    public void ListClosedAccounts(String bankerid) {
+        HashMap<String, String> hashMap = JDBCExample.BankerListClosedAccounts(bankerid);
+        String statement = "Listing closed accounts in the format AccountType: AccountId" + '\n';
+        for (String key : hashMap.keySet()) {
+            statement += hashMap.get(key) + ": " + key + '\n';
+        }
+        JOptionPane.showMessageDialog(null, statement);
     }
 
     public void GenerateDTER(String bankerid) {
@@ -153,7 +170,27 @@ public class BankerAppUI {
     }
 
     public void AddInterest(String bankerid) {
-
+        JTextField value = new JTextField();
+        JTextField value2 = new JTextField();
+        JTextField value3 = new JTextField();
+        String cid;
+        String tid;
+        Double amount;
+        Object message[] = {
+                "Enter Customer's Account ID", value,
+                "Enter Customer's Tax ID", value2,
+        };
+        int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            cid = value.getText();
+            tid = value2.getText();
+            Double interest = JDBCExample.getInterest(cid);
+            Double interest2 = JDBCExample.AccrueInterest(cid, tid);
+            JOptionPane.showMessageDialog(null, "Customer has accrued " + interest2 + " dollars");
+            JDBCExample.CustomerAccruedInterestTransaction(tid, cid, interest2);
+            JDBCExample.BankerAddInterest(bankerid);
+        } else {
+        }
     }
 
     public void CreateAccount(String bankerid) {
@@ -165,7 +202,15 @@ public class BankerAppUI {
     }
 
     public void DeleteTransactions(String bankerid) {
-
+        JFrame f = new JFrame("label");
+        JLabel l = new JLabel();
+        l.setText("Deleting all transactions... Creating a fresh table for the new month");
+        JPanel p = new JPanel();
+        p.add(l);
+        f.add(p);
+        f.setSize(100, 100);
+        f.show();
+        JDBCExample.BankerDeleteTransactions(bankerid);
     }
 
 
