@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class BankerAppUI {
     private JPanel panel;
@@ -194,7 +195,46 @@ public class BankerAppUI {
     }
 
     public void CreateAccount(String bankerid) {
-        NewCustomer.main();
+        //prompt for number of owners
+        String value = (String) JOptionPane.showInputDialog("Enter the number of Owners");
+        int numOfOwners = Integer.parseInt(value);
+        System.out.println(numOfOwners);
+        ArrayList<String> Owners = new ArrayList<>();
+        //show entertaxid dialog that amount of times
+        for (int i = 0; i < numOfOwners; i++) {
+            String name = (String) JOptionPane.showInputDialog("Enter Owner " + (i + 1));
+            Owners.add(name);
+            System.out.println(name);
+
+        }
+        //show enter account info dialog
+        JTextField accountTypeField = new JTextField();
+        JTextField branchNameField = new JTextField();
+        JTextField accountidfield = new JTextField();
+
+        String accounttype;
+        String branchname;
+        String accountid;
+        Object message[] = {
+                "Enter Account Type", accountTypeField,
+                "Enter branch name", branchNameField,
+                "Enter your prefered accountid or leave blank for a random one", accountidfield
+
+        };
+        int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            accounttype = accountTypeField.getText();
+            branchname = branchNameField.getText();
+            accountid = accountidfield.getText();
+            if (accountid.length() == 0) {
+                accountid = JDBCExample.getUniqueAccountId();
+            }
+
+            for (int j = 0; j < numOfOwners; j++) {
+                JDBCExample.addAccount(accountid, Owners.get(j), 0.0, accounttype, branchname);
+            }
+        } else {
+        }
     }
 
     public void DeleteClosedAccounts(String bankerid) {
@@ -258,5 +298,4 @@ public class BankerAppUI {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
-
 }

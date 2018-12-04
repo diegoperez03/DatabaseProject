@@ -54,6 +54,7 @@ public class CustomerAppUI {
                 "Wire",
                 "Pay-friend",
                 "Quick-cash",
+                "Quick-refill",
                 "Write-Check",
                 "Accrue-Interest"
         };
@@ -119,6 +120,18 @@ public class CustomerAppUI {
                     System.out.println(transactionType.getSelectedItem());
                     QuickCash(id, accountId);
 
+                } else if (transactionType.getSelectedItem().equals("Quick-refill")) {
+                    System.out.println(transactionType.getSelectedItem());
+                    ArrayList<String> pocketAccountId = new ArrayList<>();
+                    pocketAccountId.addAll(JDBCExample.getPocketAccountIds(id));
+                    if (pocketAccountId.size() == 0) {
+                        JLabel warning = new JLabel("You don't have a pocket account.");
+                        JOptionPane.showMessageDialog(warning, "You don't have a pocket account.");
+                    } else {
+                        QuickRefill(id, accountId, pocketAccountId);
+                    }
+
+
                 } else if (transactionType.getSelectedItem().equals("Purchase")) {
                     System.out.println(transactionType.getSelectedItem());
                     ArrayList<String> pocketAccountId = new ArrayList<>();
@@ -141,7 +154,7 @@ public class CustomerAppUI {
                         Collect(id, accountId, pocketAccountId);
                     }
                 } else if (transactionType.getSelectedItem().equals("Write-Check")) {
-                    if (accountType.equals("Checking")) {
+                    if (accountType.equals("Checking") || accountType.equals("Student-Checking") || accountType.equals("Interest-Checking")) {
                         WriteCheck(id, accountId);
                     } else {
                         JLabel warning = new JLabel("You did not select your checking account.");
@@ -332,6 +345,29 @@ public class CustomerAppUI {
     public void QuickCash(String taxid, String accountid) {
 
         JDBCExample.CustomerQuickCashTransaction(taxid, accountid, 20.0);
+
+    }
+
+    public void QuickRefill(String taxid, String accountid, ArrayList<String> pocketAccountIds) {
+
+        JComboBox accountsField = new JComboBox();
+
+        accountsField.addItem(" ");
+        for (Object account : pocketAccountIds) {
+            accountsField.addItem(account.toString());
+        }
+        Object[] message = {
+                "Select a Pocket Account to Withdraw From:", accountsField
+        };
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+
+            String pocketId = accountsField.getSelectedItem().toString();
+            JDBCExample.CustomerQuickRefillTransaction(taxid, accountid, 20.0, pocketId);
+
+        }
+
 
     }
 

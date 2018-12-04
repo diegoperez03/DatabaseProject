@@ -22,7 +22,7 @@ public class JDBCExample {
 
     }//end main
 
-    public static void addCustomer(Customer custom ,Double deposit, String accountType){
+    public static void addCustomer(Customer custom ){
         Connection conn = null;
         Statement stmt = null;
         try{
@@ -39,6 +39,8 @@ public class JDBCExample {
                     "VALUES ('%s','%s','%s','%s') ",custom.taxId,custom.name,custom.address,custom.pin);
             System.out.println(sql);
             stmt.executeUpdate(sql);
+            System.out.println("success");
+
 
         }catch(SQLException se){
             //Handle errors for JDBC
@@ -105,6 +107,100 @@ public class JDBCExample {
         System.out.println("Goodbye!");
 
     }
+
+    public static void addAccount(String accountId, String name, Double deposit, String accounttype, String Bankname){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String taxid = getIdFromName(name);
+            String sql = String.format("INSERT INTO Account " +
+                    "VALUES ('%s','%s','%s','%s','%f','%s','%f') ",accountId,
+                    accounttype,taxid, Bankname,3.0,"f",deposit);
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+
+
+
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+
+    }
+
+    public static String getIdFromName(String name){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = String.format("SELECT taxid FROM Customers WHERE name = '%s' ",name);
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                String id = rs.getString("taxid");
+                System.out.println(id);
+                return id;
+            }
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
 
     public static String getNameFromPin(String Pin){
         Connection conn = null;
@@ -264,6 +360,59 @@ public class JDBCExample {
                 String name = rs.getString("bankername");
                 return name;
             }
+
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
+    public static String getUniqueAccountId(){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = "SELECT accountid FROM Account ";
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            ArrayList<String> ids = new ArrayList<>();
+            while(rs.next()){
+                ids.add(rs.getString("accountid"));
+            }
+            Random rand = new Random();
+            Integer randomId = rand.nextInt(999999999) + 1;
+            while(ids.contains(Integer.toString(randomId))){
+                randomId = rand.nextInt(999999999) + 1;
+            }
+
+            return Integer.toString(randomId);
 
 
         }catch(SQLException se){
@@ -1128,13 +1277,14 @@ public class JDBCExample {
             stmt = conn.createStatement();
             //Insert into database
             String transactionId = getUniqueTransactionId();
+            Double total = getBalance(accountid) - (Amount);
             String sql = String.format("INSERT INTO CustomerTransaction " +
-                    "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",accountid, taxid, Amount, "Quick Cash", transactionId);
+                    "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",accountid, taxid, total, "Quick Cash", transactionId);
 
             System.out.println(sql);
             stmt.executeUpdate(sql);
 
-            Double total = getBalance(accountid) - (Amount);
+
 
             String sql4 = String.format("UPDATE Account "+
                     "SET balance = %f WHERE accountid = %s",total,accountid);
@@ -1168,6 +1318,74 @@ public class JDBCExample {
         System.out.println("Goodbye!");
         return null;
     }
+
+
+    public static String CustomerQuickRefillTransaction(String taxid,String accountid, Double Amount,String pocketid){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String transactionId = getUniqueTransactionId();
+            Double total = getBalance(accountid) - (Amount);
+            String sql = String.format("INSERT INTO CustomerTransaction " +
+                    "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",accountid, taxid, total, "Quick Cash", transactionId);
+
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+            total = getBalance(pocketid) + (Amount);
+            String sql2 = String.format("INSERT INTO CustomerTransaction " +
+                    "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ",pocketid, taxid, total, "Quick Cash", transactionId);
+
+            System.out.println(sql2);
+            stmt.executeUpdate(sql2);
+
+
+            String sql4 = String.format("UPDATE Account "+
+                    "SET balance = %f WHERE accountid = %s",total,accountid);
+            System.out.println(sql4);
+            stmt.executeUpdate(sql4);
+
+            String sql3 = String.format("UPDATE Account "+
+                    "SET balance = %f WHERE accountid = %s",total,pocketid);
+            System.out.println(sql3);
+            stmt.executeUpdate(sql3);
+
+
+            return transactionId;
+
+
+        }catch(SQLException se){
+            //Handle errors for JDBC
+            se.printStackTrace();
+        }catch(Exception e){
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }finally{
+            //finally block used to close resources
+            try{
+                if(stmt!=null)
+                    conn.close();
+            }catch(SQLException se){
+            }// do nothing
+            try{
+                if(conn!=null)
+                    conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
 
     public static String CustomerTransferTransaction(String FromAccountId, String taxId, Double Amount, String ToAccountID){
         Connection conn = null;
