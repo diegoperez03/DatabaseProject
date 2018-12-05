@@ -20,6 +20,7 @@ public class JDBCExample {
     static final String USERNAME = "diego03";
     static final String PASSWORD = "9624610";
 
+
     public static String day = "6";
     public static String month = "Dec";
     public static String year = "18";
@@ -712,6 +713,9 @@ public class JDBCExample {
             //Insert into database
             String transactionId = getUniqueTransactionId();
             Double total = getBalance(accountId) + Amount;
+
+            Timestamp stamp = new Timestamp(System.currentTimeMillis());
+            stamp = changeDate(stamp);
 
             String sql = String.format("INSERT INTO CustomerTransaction " +
                     "VALUES ('%s','%s','%s','%s',CURRENT_TIMESTAMP,'%s' ) ", accountId, taxId, total, TransactionType, transactionId);
