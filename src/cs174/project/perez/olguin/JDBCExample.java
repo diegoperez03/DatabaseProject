@@ -1842,8 +1842,6 @@ public class JDBCExample {
 
     }
 
-
-
     public static HashMap<String, String> BankerListClosedAccounts(String bankerid) {
         Connection conn = null;
         Statement stmt = null;
@@ -1880,6 +1878,73 @@ public class JDBCExample {
             stmt.execute(sql2);
 
             return hashMap;
+
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        } finally {
+            //finally block used to close resources
+            try {
+                if (stmt != null)
+                    conn.close();
+            } catch (SQLException se) {
+            }// do nothing
+            try {
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+    }
+
+    public static ArrayList<ArrayList<String>> BankerCustomerReport(String bankerid, String taxId){
+        Connection conn = null;
+        Statement stmt = null;
+        ArrayList<String> values = new ArrayList<>();
+        ArrayList<ArrayList<String>> result = new ArrayList<>();
+        HashMap<String, String> hashMap = new HashMap<>();
+        try {
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = String.format("SELECT accountid, accounttype, closed FROM Account WHERE taxid = %s ", taxId);
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                String accountid = rs.getString("accountid");
+                String accounttype = rs.getString("accounttype");
+                String closed = rs.getString("closed");
+                System.out.println(accountid + " " + accounttype + " " + closed + '\n');
+                values.add(accountid);
+                values.add(accounttype);
+                values.add(closed);
+                result.add(new ArrayList<>(values));
+                values.clear();
+            }
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String transactionId = getUniqueBankerTransactionId();
+            String sql2 = String.format("INSERT INTO BankerTransaction " +
+                    "VALUES ('%s','%s', CURRENT_TIMESTAMP,'%s' ) ", bankerid, "BankerCustomerReport", transactionId);
+            System.out.println(sql);
+            stmt.execute(sql2);
+
+            return result;
 
         } catch (SQLException se) {
             //Handle errors for JDBC

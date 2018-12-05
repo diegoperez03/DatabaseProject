@@ -1,5 +1,7 @@
 package cs174.project.perez.olguin;
 
+import  jdk.nashorn.internal.scripts.JO;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -32,7 +34,6 @@ public class BankerAppUI {
                 "Generate Monthly Statement",
                 "List Closed Accounts",
                 "Generate Goverment Drug and Tax Evasion Report(DTER)",
-                "Transfer",
                 "Customer Report",
                 "Add Interest",
                 "Create Account",
@@ -60,12 +61,10 @@ public class BankerAppUI {
                     ListClosedAccounts(bankerId);
                 } else if (transcType.getSelectedItem().equals("Generate Goverment Drug and Tax Evasion Report(DTER)")) {
                     System.out.println(transcType.getSelectedItem());
-                } else if (transcType.getSelectedItem().equals("Transfer")) {
-                    System.out.println(transcType.getSelectedItem());
-                    //Wire(pin);
+
                 } else if (transcType.getSelectedItem().equals("Customer Report")) {
                     System.out.println(transcType.getSelectedItem());
-                    //PayFriend(pin);
+                    CustomerReport(bankerId);
                 } else if (transcType.getSelectedItem().equals("Add Interest")) {
                     System.out.println(transcType.getSelectedItem());
                     AddInterest(bankerId);
@@ -164,7 +163,20 @@ public class BankerAppUI {
     }
 
     public void CustomerReport(String bankerid) {
-
+        String value = JOptionPane.showInputDialog("Enter Customer's Tax ID");
+        ArrayList<ArrayList<String>> arrayList = JDBCExample.BankerCustomerReport(bankerid, value);
+        String statement = "Generating a list of all accounts for customer with tax ID: " + value + '\n';
+        for (ArrayList<String> temp : arrayList) {
+            String aid = temp.get(0);
+            String type = temp.get(1);
+            String closed = temp.get(2);
+            if (closed.equals("f")) {
+                statement += aid + " " + type + " " + closed + "alse" + '\n';
+            } else {
+                statement += aid + " " + type + " " + closed + "rue" + '\n';
+            }
+        }
+        JOptionPane.showMessageDialog(null, statement);
     }
 
     public void AddInterest(String bankerid) {
