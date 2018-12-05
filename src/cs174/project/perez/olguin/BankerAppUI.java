@@ -1,5 +1,6 @@
 package cs174.project.perez.olguin;
 
+import jdk.nashorn.internal.scripts.JD;
 import  jdk.nashorn.internal.scripts.JO;
 
 import javax.swing.*;
@@ -61,7 +62,7 @@ public class BankerAppUI {
                     ListClosedAccounts(bankerId);
                 } else if (transcType.getSelectedItem().equals("Generate Goverment Drug and Tax Evasion Report(DTER)")) {
                     System.out.println(transcType.getSelectedItem());
-
+                    GenerateDTER(bankerId);
                 } else if (transcType.getSelectedItem().equals("Customer Report")) {
                     System.out.println(transcType.getSelectedItem());
                     CustomerReport(bankerId);
@@ -73,7 +74,7 @@ public class BankerAppUI {
                     CreateAccount(bankerId);
                 } else if (transcType.getSelectedItem().equals("Delete Closed Accounts and Customers")) {
                     System.out.println(transcType.getSelectedItem());
-                    //Collect(pin);
+                    DeleteClosedAccounts(bankerId);
                 } else if (transcType.getSelectedItem().equals("Delete Transactions")) {
                     System.out.println(transcType.getSelectedItem());
                     DeleteTransactions(bankerId);
@@ -159,7 +160,15 @@ public class BankerAppUI {
     }
 
     public void GenerateDTER(String bankerid) {
-
+        ArrayList<String> accIds = JDBCExample.getAIDfromIncreaseTransactions(bankerid);
+        //ArrayList<String> names = new ArrayList<>();
+        String statement = '\t' + "      " + '\t' + "   " + "Generating Government Drug and Tax Evasion Report" + '\n';
+        statement += "--------------------------------------------------------------------------" + '\n';
+        statement += "Listing Account IDs for customers with sum of deposits, transfers, and wires over $10,000:" + '\n';
+        for (int i = 0; i < accIds.size(); i++) {
+            statement += "--> " + accIds.get(i) + '\n';
+        }
+        JOptionPane.showMessageDialog(null, statement);
     }
 
     public void CustomerReport(String bankerid) {
@@ -227,7 +236,7 @@ public class BankerAppUI {
         Object message[] = {
                 "Enter Account Type", accountTypeField,
                 "Enter branch name", branchNameField,
-                "Enter your prefered accountid or leave blank for a random one", accountidfield
+                "Enter your preferred accountid or leave blank for a random one", accountidfield
 
         };
         int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
@@ -247,24 +256,14 @@ public class BankerAppUI {
     }
 
     public void DeleteClosedAccounts(String bankerid) {
-
+        String statement = "Removing all closed accounts from the database and removing all customers who do not own any accounts.";
+        JDBCExample.BankerDeleteClosedAccounts(bankerid);
+        JOptionPane.showMessageDialog(null, statement);
     }
 
     public void DeleteTransactions(String bankerid) {
-        JFrame f = new JFrame("label");
-
-        // create a label to display text
-        JLabel l = new JLabel();
-        l.setText("Deleting all transactions... Creating a fresh table for the new month");
-        JPanel p = new JPanel();
-
-        // add label to panel
-        p.add(l);
-
-        // add panel to frame
-        f.add(p);
-        f.setSize(100, 100);
-        f.show();
+        String statement = "Deleting all transactions... Creating a fresh table for the new month";
+        JOptionPane.showMessageDialog(null, statement);
         JDBCExample.BankerDeleteTransactions(bankerid);
     }
 

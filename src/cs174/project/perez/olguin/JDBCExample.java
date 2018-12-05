@@ -1772,6 +1772,80 @@ public class JDBCExample {
 
     }
 
+    public static ArrayList<String> getAIDfromIncreaseTransactions(String bankerid){
+        Connection conn = null;
+        Statement stmt = null;
+        ArrayList<String> aidList = new ArrayList<>();
+        ArrayList<Double> balances = new ArrayList<>();
+        Double totalBalance = 0.0;
+        ArrayList<String> names = new ArrayList<>();
+        try {
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = String.format("SELECT * FROM CustomerTransaction WHERE transactiontype = 'Deposit' OR transactiontype = 'Wire' OR transactiontype = 'Transfer' AND time > sysdate-30 ");
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                String aid = rs.getString("accountid");
+                if(!aidList.contains(aid)) {
+                    aidList.add(aid);
+                }
+            }
+            for(int i = 0; i < aidList.size(); i++) {
+                String sql2 = String.format("SELECT * FROM CustomerTransaction WHERE transactiontype = 'Deposit' OR transactiontype = 'Wire' OR transactiontype = 'Transfer' AND time > sysdate-30 AND accountid = %s ", aidList.get(i));
+                ResultSet rs2 = stmt.executeQuery(sql2);
+                while (rs2.next()) {
+                    String acc = rs2.getString("accountid");
+                    Double value = rs2.getDouble("balanceafter");
+                    if(acc.equals(aidList.get(i))) {
+                        balances.add(value);
+                    }
+                }
+                for (int j = 0; j < balances.size(); j++) {
+                    totalBalance += balances.get(j);
+                }
+                if (totalBalance >= 10000) {
+                    names.add(aidList.get(i));
+                    totalBalance = 0.0;
+                    balances.clear();
+                }
+
+            }
+            return names;
+        }
+        catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        } finally {
+            //finally block used to close resources
+            try {
+                if (stmt != null)
+                    conn.close();
+            } catch (SQLException se) {
+            }// do nothing
+            try {
+                if (conn != null)
+                    conn.close();
+            }
+            catch (SQLException se) {
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+        return null;
+
+    }
+
     public static ArrayList<Double> getFinalInitialBalance(String accountId){
         Connection conn = null;
         Statement stmt = null;
@@ -1874,7 +1948,7 @@ public class JDBCExample {
             String transactionId = getUniqueBankerTransactionId();
             String sql2 = String.format("INSERT INTO BankerTransaction " +
                     "VALUES ('%s','%s', CURRENT_TIMESTAMP,'%s' ) ", bankerid, "ListClosedAccounts", transactionId);
-            System.out.println(sql);
+            System.out.println(sql2);
             stmt.execute(sql2);
 
             return hashMap;
@@ -1941,7 +2015,7 @@ public class JDBCExample {
             String transactionId = getUniqueBankerTransactionId();
             String sql2 = String.format("INSERT INTO BankerTransaction " +
                     "VALUES ('%s','%s', CURRENT_TIMESTAMP,'%s' ) ", bankerid, "BankerCustomerReport", transactionId);
-            System.out.println(sql);
+            System.out.println(sql2);
             stmt.execute(sql2);
 
             return result;
@@ -2035,7 +2109,7 @@ public class JDBCExample {
             String transactionId = getUniqueBankerTransactionId();
             String sql2 = String.format("INSERT INTO BankerTransaction " +
                     "VALUES ('%s','%s', CURRENT_TIMESTAMP,'%s' ) ", bankerid, "DeleteTransactions", transactionId);
-            System.out.println(sql);
+            System.out.println(sql2);
             stmt.execute(sql2);
 
         } catch (SQLException se) {
@@ -2075,18 +2149,25 @@ public class JDBCExample {
             System.out.println("Creating statement...");
             stmt = conn.createStatement();
             //Insert into database
-            String sql = String.format("DELETE FROM Account WHERE closed = true");
+            String sql = String.format("DELETE FROM Account WHERE closed = 't' ");
             System.out.println(sql);
             stmt.executeUpdate(sql);
+
+//            System.out.println("Creating statement...");
+//            stmt = conn.createStatement();
+//            //Insert into database
+//            String sql2 = String.format("DELETE FROM Account WHERE closed = 't' ");
+//            System.out.println(sql2);
+//            stmt.executeUpdate(sql2);
 
             System.out.println("Creating statement...");
             stmt = conn.createStatement();
             //Insert into database
             String transactionId = getUniqueBankerTransactionId();
-            String sql2 = String.format("INSERT INTO BankerTransaction " +
+            String sql3 = String.format("INSERT INTO BankerTransaction " +
                     "VALUES ('%s','%s', CURRENT_TIMESTAMP,'%s' ) ", bankerid, "DeleteClosedAccounts", transactionId);
-            System.out.println(sql);
-            stmt.execute(sql2);
+            System.out.println(sql3);
+            stmt.execute(sql3);
 
         } catch (SQLException se) {
             //Handle errors for JDBC
