@@ -14,16 +14,15 @@ public class CustomerAppUI {
     private JComboBox transactionType;
     private static JFrame frame;
 
-    public CustomerAppUI(String pin) {
+    public CustomerAppUI(String id) {
         panel.setSize(400, 500);
 
-        String name = JDBCExample.getNameFromPin(pin);
+        String name = JDBCExample.getNameFromId(id);
         welcome.setText("Welcome " + name + " !");
         //pull name from database with pin  and set welcome message on top
         //pull up dialog if more then one account
         //numOfAccounts(name,pin);  Implement this function to find out how many and which accounts are avaiable to pick
         //For now we assume only one
-        String id = JDBCExample.getIdFromPin(pin);
         HashMap<String, String> example = JDBCExample.getCheckingSavingAccounts(id);
         int length = example.size();
         String[] options = new String[length];

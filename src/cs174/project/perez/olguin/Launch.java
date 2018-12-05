@@ -1,9 +1,14 @@
 package cs174.project.perez.olguin;
 
+import jdk.nashorn.internal.scripts.JD;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 public class Launch {
     private JPasswordField passwordField1;
@@ -14,6 +19,8 @@ public class Launch {
     private JTextField enterPINTextField;
     private JButton loginCustomerButton;
     private JButton loginBankerButton;
+    private JButton NewDateButton;
+    private JButton setNewInterestRateButton;
     private static JFrame frame;
 
     public Launch() {
@@ -35,13 +42,21 @@ public class Launch {
         });
 
         loginCustomerButton.addActionListener(new ActionListener() {
+            String statement = "";
+
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 String pin = enterPINTextField.getText();
                 if (!pin.equals("")) {
-                    String[] args = {pin};
-                    CustomerAppUI.main(args);
-                    frame.setVisible(false);
+                    String taxId = JDBCExample.verifyPin(pin);
+                    if (!(taxId == null)) {
+                        String[] args = {taxId};
+                        CustomerAppUI.main(args);
+                        frame.setVisible(false);
+                    } else {
+                        statement += "Invalid pin number";
+                        JOptionPane.showMessageDialog(null, statement);
+                    }
                 }
             }
         });
@@ -54,6 +69,57 @@ public class Launch {
                     String[] args = {bankerId};
                     BankerAppUI.main(args);
                     frame.setVisible(false);
+                }
+            }
+        });
+
+        setNewInterestRateButton.addActionListener(new ActionListener() {
+            JTextField value = new JTextField();
+            JTextField value2 = new JTextField();
+            String atype;
+            Double intrate;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Object message[] = {
+                        "Enter the account type that you want to change the interest rate for:", value,
+                        "Enter the interest rate:", value2,
+                };
+                int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+                if (option == JOptionPane.OK_OPTION) {
+                    atype = value.getText();
+                    intrate = Double.parseDouble(value2.getText());
+                    JDBCExample.ChangeInterestRate(atype, intrate);
+                } else {
+                }
+            }
+        });
+
+        NewDateButton.addActionListener(new ActionListener() {
+            String day, month, year;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JTextField value = new JTextField();
+                JTextField value2 = new JTextField();
+                JTextField value3 = new JTextField();
+                Object message[] = {
+                        "Enter Day", value,
+                        "Enter Month", value2,
+                        "Enter Year", value3,
+                };
+                int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+                if (option == JOptionPane.OK_OPTION) {
+                    day = value.getText();
+                    month = value2.getText();
+                    year = value3.getText();
+                    JDBCExample.SetDate(day, month, year);
+                    Timestamp ts = new Timestamp(new Date().getTime());
+                    SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yy");
+                    format.format(ts);
+                    System.out.println(format.format(ts));
+                    System.out.println(JDBCExample.ChangeDate(ts));
+                } else {
                 }
             }
         });
@@ -129,6 +195,12 @@ public class Launch {
         loginBankerButton = new JButton();
         loginBankerButton.setText("Login Banker");
         panel1.add(loginBankerButton, new com.intellij.uiDesigner.core.GridConstraints(5, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        NewDateButton = new JButton();
+        NewDateButton.setText("SetNewDate");
+        panel1.add(NewDateButton, new com.intellij.uiDesigner.core.GridConstraints(7, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        setNewInterestRateButton = new JButton();
+        setNewInterestRateButton.setText("SetNewInterestRate");
+        panel1.add(setNewInterestRateButton, new com.intellij.uiDesigner.core.GridConstraints(8, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

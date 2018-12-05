@@ -218,6 +218,7 @@ public class BankerAppUI {
         int numOfOwners = Integer.parseInt(value);
         System.out.println(numOfOwners);
         ArrayList<String> Owners = new ArrayList<>();
+        Double interest = 0.0;
         //show entertaxid dialog that amount of times
         for (int i = 0; i < numOfOwners; i++) {
             String name = (String) JOptionPane.showInputDialog("Enter Owner " + (i + 1));
@@ -242,6 +243,13 @@ public class BankerAppUI {
         int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
             accounttype = accountTypeField.getText();
+            if (accounttype.equals("Checking") | accounttype.equals("Interest-Checking")) {
+                interest = 5.5 / 12;
+            }
+            if (accounttype.equals("Savings")) {
+                interest = 7.5 / 12;
+            }
+
             branchname = branchNameField.getText();
             accountid = accountidfield.getText();
             if (accountid.length() == 0) {
@@ -249,7 +257,7 @@ public class BankerAppUI {
             }
 
             for (int j = 0; j < numOfOwners; j++) {
-                JDBCExample.addAccount(accountid, Owners.get(j), 0.0, accounttype, branchname);
+                JDBCExample.addAccount(accountid, Owners.get(j), 0.0, accounttype, branchname, interest);
             }
         } else {
         }
