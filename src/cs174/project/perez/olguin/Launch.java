@@ -38,19 +38,23 @@ public class Launch {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 String pin = enterPINTextField.getText();
-                String[] args = {pin};
-                CustomerAppUI.main(args);
-                frame.setVisible(false);
+                if (!pin.equals("")) {
+                    String[] args = {pin};
+                    CustomerAppUI.main(args);
+                    frame.setVisible(false);
+                }
             }
         });
 
         loginBankerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                String bakerId = enterBankerIdTextField.getText();
-                String[] args = {bakerId};
-                BankerAppUI.main(args);
-                frame.setVisible(false);
+                String bankerId = enterBankerIdTextField.getText();
+                if (!bankerId.equals("")) {
+                    String[] args = {bankerId};
+                    BankerAppUI.main(args);
+                    frame.setVisible(false);
+                }
             }
         });
     }
@@ -133,4 +137,5 @@ public class Launch {
     public JComponent $$$getRootComponent$$$() {
         return panel1;
     }
+
 }
