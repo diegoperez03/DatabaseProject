@@ -171,9 +171,9 @@ public class BankerAppUI {
             String type = temp.get(1);
             String closed = temp.get(2);
             if (closed.equals("f")) {
-                statement += aid + " " + type + " " + closed + "alse" + '\n';
+                statement += aid + " " + type + " " + '\t' + '\t' + "Closed: False" + '\n';
             } else {
-                statement += aid + " " + type + " " + closed + "rue" + '\n';
+                statement += aid + " " + type + " " + '\t' + '\t' + "Closed: True" + '\n';
             }
         }
         JOptionPane.showMessageDialog(null, statement);
