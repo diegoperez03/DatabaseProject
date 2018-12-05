@@ -2153,12 +2153,12 @@ public class JDBCExample {
             System.out.println(sql);
             stmt.executeUpdate(sql);
 
-//            System.out.println("Creating statement...");
-//            stmt = conn.createStatement();
-//            //Insert into database
-//            String sql2 = String.format("DELETE FROM Account WHERE closed = 't' ");
-//            System.out.println(sql2);
-//            stmt.executeUpdate(sql2);
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql2 = "DELETE FROM Customers WHERE taxid = '666'";
+            System.out.println(sql2);
+            stmt.executeUpdate(sql2);
 
             System.out.println("Creating statement...");
             stmt = conn.createStatement();
