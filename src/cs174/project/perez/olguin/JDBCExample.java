@@ -2230,4 +2230,46 @@ public class JDBCExample {
         return buffer;
     }
 
+    public static void CloseAccount(String accountid){
+        Connection conn = null;
+        Statement stmt = null;
+        try {
+
+            Class.forName(JDBC_DRIVER);
+            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            System.out.println("Connected database successfully...");
+
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            //Insert into database
+            String sql = String.format("UPDATE Account " +
+                    "SET closed = 't' WHERE accountid = %s", accountid);
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+
+
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        } finally {
+            //finally block used to close resources
+            try {
+                if (stmt != null)
+                    conn.close();
+            } catch (SQLException se) {
+            }// do nothing
+            try {
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+        System.out.println("Goodbye!");
+    }
+
 }
