@@ -201,8 +201,15 @@ public class CustomerAppUI {
         try {
             amount = Double.parseDouble(value);
             System.out.println(amount);
-            JDBCExample.CustomerWithdrawalTransaction(accountId, customerId,
-                    amount, "Withdrawal");
+            Double result = JDBCExample.getBalance(accountId) - amount;
+            if (result > 0.01) {
+                JDBCExample.CustomerWithdrawalTransaction(accountId, customerId,
+                        amount, "Withdrawal");
+            } else {
+                String statement = "Balance has reached an amount of $0.01 or less. Closing account..";
+                JOptionPane.showMessageDialog(null, statement);
+                JDBCExample.CloseAccount(accountId);
+            }
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }
@@ -230,7 +237,15 @@ public class CustomerAppUI {
         if (option == JOptionPane.OK_OPTION) {
             amount = Double.parseDouble(value.getText());
             String selection = accounts.getSelectedItem().toString();
-            JDBCExample.CustomerWireTransaction(accountId, customerId, amount, otherAccounts.get(selection).toString());
+            Double result = JDBCExample.getBalance(accountId) - amount;
+            if (result > 0.01) {
+                JDBCExample.CustomerWireTransaction(accountId, customerId, amount, otherAccounts.get(selection).toString());
+            }
+            else {
+                String statement = "Balance has reached an amount of $0.01 or less. Closing account..";
+                JOptionPane.showMessageDialog(null, statement);
+                JDBCExample.CloseAccount(accountId);
+                }
         }
     }
 
@@ -252,7 +267,15 @@ public class CustomerAppUI {
         if (option == JOptionPane.OK_OPTION) {
             amount = Double.parseDouble(value.getText());
             String pocket = accounts.getSelectedItem().toString();
-            JDBCExample.CustomerTopUpTransaction(selectedAccountId, taxid, pocket, amount);
+            Double result = JDBCExample.getBalance(selectedAccountId) - amount;
+            if (result > 0.01) {
+                JDBCExample.CustomerTopUpTransaction(selectedAccountId, taxid, pocket, amount);
+            }
+            else {
+                String statement = "Balance has reached an amount of $0.01 or less. Closing account..";
+                JOptionPane.showMessageDialog(null, statement);
+                JDBCExample.CloseAccount(selectedAccountId);
+            }
         }
 
     }
@@ -280,7 +303,14 @@ public class CustomerAppUI {
             String pocketId = accounts.getSelectedItem().toString();
             String friendId = friendIdField.getText();
             System.out.println(amount + pocketId + friendId);
-            JDBCExample.CustomerPayFriendTransaction(taxid, friendId, pocketId, amount);
+            Double result = JDBCExample.getBalance(pocketId) - amount;
+            if (result > 0.01) {
+                JDBCExample.CustomerPayFriendTransaction(taxid, friendId, pocketId, amount);
+            }
+            else {
+                String statement = "Balance has reached an amount of $0.01 or less. Closing account..";
+                JOptionPane.showMessageDialog(null, statement);
+            }
         }
 
     }
@@ -304,7 +334,14 @@ public class CustomerAppUI {
         if (option == JOptionPane.OK_OPTION) {
             amount = Double.parseDouble(value.getText());
             String pocketId = accountsField.getSelectedItem().toString();
-            JDBCExample.CustomerPurchaseTransaction(taxid, pocketId, amount);
+            Double result = JDBCExample.getBalance(pocketId) - amount;
+            if (result > 0.01) {
+                JDBCExample.CustomerPurchaseTransaction(taxid, pocketId, amount);
+            }
+            else {
+                String statement = "Balance has reached an amount of $0.01 or less. Closing account..";
+                JOptionPane.showMessageDialog(null, statement);
+            }
         }
 
     }
@@ -328,7 +365,14 @@ public class CustomerAppUI {
         if (option == JOptionPane.OK_OPTION) {
             amount = Double.parseDouble(value.getText());
             String pocketId = accounts.getSelectedItem().toString();
-            JDBCExample.CustomerCollectTransaction(taxid, pocketId, accountid, amount);
+            Double result = JDBCExample.getBalance(pocketId) - amount;
+            if (result > 0.01) {
+                JDBCExample.CustomerCollectTransaction(taxid, pocketId, accountid, amount);
+            }
+            else {
+                String statement = "Balance has reached an amount of $0.01 or less. Closing account..";
+                JOptionPane.showMessageDialog(null, statement);
+            }
         }
 
     }
@@ -337,13 +381,30 @@ public class CustomerAppUI {
 
         String value = (String) JOptionPane.showInputDialog("Enter an amount");
         Double amount = Double.parseDouble(value);
-        String checkNumber = JDBCExample.CustomerWriteCheckTransaction(taxid, accountid, amount);
-        JOptionPane.showMessageDialog(null, checkNumber + " is your Check Number !");
+        Double result = JDBCExample.getBalance(accountid) - amount;
+        if (result > 0.01) {
+            String checkNumber = JDBCExample.CustomerWriteCheckTransaction(taxid, accountid, amount);
+            JOptionPane.showMessageDialog(null, checkNumber + " is your Check Number !");
+
+        }
+        else {
+            String statement = "Balance has reached an amount of $0.01 or less. Closing account..";
+            JOptionPane.showMessageDialog(null, statement);
+            JDBCExample.CloseAccount(accountid);
+        }
     }
 
     public void QuickCash(String taxid, String accountid) {
 
-        JDBCExample.CustomerQuickCashTransaction(taxid, accountid, 20.0);
+        Double result = JDBCExample.getBalance(accountid) - 20.0;
+        if (result > 0.01) {
+            JDBCExample.CustomerQuickCashTransaction(taxid, accountid, 20.0);
+        }
+        else {
+            String statement = "Balance has reached an amount of $0.01 or less. Closing account..";
+            JOptionPane.showMessageDialog(null, statement);
+            JDBCExample.CloseAccount(accountid);
+        }
 
     }
 
@@ -361,10 +422,15 @@ public class CustomerAppUI {
 
         int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
-
             String pocketId = accountsField.getSelectedItem().toString();
-            JDBCExample.CustomerQuickRefillTransaction(taxid, accountid, 20.0, pocketId);
-
+            Double result = JDBCExample.getBalance(pocketId) - 20.0;
+            if (result > 0.01) {
+                JDBCExample.CustomerQuickRefillTransaction(taxid, accountid, 20.0, pocketId);
+            }
+            else {
+                String statement = "Balance has reached an amount of $0.01 or less. Closing account..";
+                JOptionPane.showMessageDialog(null, statement);
+            }
         }
 
 
@@ -390,11 +456,19 @@ public class CustomerAppUI {
         int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
             amount = Double.parseDouble(value.getText());
-            if (amount > 2000.0) {
-                JOptionPane.showMessageDialog(null, "You can not transfer more than 2000 dollars");
-            } else {
-                String selection = accounts.getSelectedItem().toString();
-                String success = JDBCExample.CustomerTransferTransaction(accountId, customerId, amount, otherAccounts.get(selection).toString());
+            Double result = JDBCExample.getBalance(accountId) - amount;
+            if (result > 0.01) {
+                if (amount > 2000.0) {
+                    JOptionPane.showMessageDialog(null, "You can not transfer more than 2000 dollars");
+                } else {
+                    String selection = accounts.getSelectedItem().toString();
+                    JDBCExample.CustomerTransferTransaction(accountId, customerId, amount, otherAccounts.get(selection).toString());
+                }
+            }
+            else {
+                String statement = "Balance has reached an amount of $0.01 or less. Closing account..";
+                JOptionPane.showMessageDialog(null, statement);
+                JDBCExample.CloseAccount(accountId);
             }
 
         }
@@ -457,4 +531,5 @@ public class CustomerAppUI {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
+
 }
