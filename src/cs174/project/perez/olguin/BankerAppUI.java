@@ -243,6 +243,25 @@ public class BankerAppUI {
         int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
             accounttype = accountTypeField.getText();
+            if (accounttype.equals("Pocket")) {
+                String taxid = JDBCExample.getIdFromName(Owners.get(0));
+                int size = JDBCExample.getCheckingSavingAccounts(taxid).size();
+                if (size == 0) {
+                    JOptionPane.showMessageDialog(null, "You do not have an associated Checking or Savings account");
+                } else {
+                    branchname = branchNameField.getText();
+                    accountid = accountidfield.getText();
+                    if (accountid.length() == 0) {
+                        accountid = JDBCExample.getUniqueAccountId();
+                    }
+
+                    for (int j = 0; j < numOfOwners; j++) {
+                        JDBCExample.addAccount(accountid, Owners.get(j), 0.0, accounttype, branchname, interest);
+                    }
+                }
+
+            }
+
             if (accounttype.equals("Checking") | accounttype.equals("Interest-Checking")) {
                 interest = 5.5 / 12;
             }
@@ -259,7 +278,6 @@ public class BankerAppUI {
             for (int j = 0; j < numOfOwners; j++) {
                 JDBCExample.addAccount(accountid, Owners.get(j), 0.0, accounttype, branchname, interest);
             }
-        } else {
         }
     }
 
@@ -320,5 +338,4 @@ public class BankerAppUI {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
-
 }
