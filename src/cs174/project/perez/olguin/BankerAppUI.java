@@ -259,9 +259,7 @@ public class BankerAppUI {
                         JDBCExample.addAccount(accountid, Owners.get(j), 0.0, accounttype, branchname, interest);
                     }
                 }
-
             }
-
             if (accounttype.equals("Checking") | accounttype.equals("Interest-Checking")) {
                 interest = 5.5 / 12;
             }
